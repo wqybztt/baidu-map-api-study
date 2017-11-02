@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>百度地理定位API</title>
+    <style>
+    </style>
+  </head>
+  <body>
+      <h1>百度地理定位API</h1>
+      <h2>反向地址解析（地址查询）</h2>
+      <ul></ul>
+      <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+      <script>
+        $(function(){
+
+          function showMsg(msg){
+            $('ul').append('<li>'+msg+'</li>')
+          }
+          
+          if (navigator.geolocation) {  
+              navigator.geolocation.getCurrentPosition(locationSuccess, locationError,{  
+                  // 指示浏览器获取高精度的位置，默认为false  
+                  enableHighAcuracy: true,  
+                  // 指定获取地理位置的超时时间，默认不限时，单位为毫秒  
+                  timeout: 10*000,  
+                  // 最长有效期，在重复获取地理位置时，此参数指定多久再次获取位置。  
+                  maximumAge: 1//3000  
+              });  
+          }else{  
+            showMsg("您的浏览器不支持地理定位");  
+          }
+
+          function locationSuccess(position){
+            var coords = position.coords;
+            showMsg('lat : '+coords.latitude+'; lng : '+coords.longitude+';');
+            var latlng = coords.latitude+','+coords.longitude;// 纬度和经度
+            getPosMsg(latlng,function(address){
+              showMsg('省：'+address.province+'； 市：'+address.city+'；区：'+address.district+'；');
+            })
+          }
+
+          function locationError(error){  
+            switch(error.code) {  
+                case error.TIMEOUT:  
+                    showMsg("获取地理位置超时，请再次尝试");  
+                    break;  
+                case error.POSITION_UNAVAILABLE:  
+                    showMsg('地理位置不可描述');  
+                    break;  
+                case error.PERMISSION_DENIED:  
+                    showMsg('您禁止了地址位置获取');  
+                    break;  
+                case error.UNKNOWN_ERROR:  
+                    showMsg('未知错误');  
+                    break;  
+            }  
+          } 
+          
+          var latlng = '39.990912172420714,116.32715863448607';
+          function getPosMsg(latlng,cb){
+            $.post('/',{latlng:latlng},function(data){
+              var address = data.result.addressComponent;
+              cb && cb(address);
+            },'json');
+          }
+          getPosMsg(latlng,function(address){
+            showMsg('省：'+address.province+'； 市：'+address.city+'；区：'+address.district+'；');
+          })
+        });
+      </script>
+  </body>
+</html>
